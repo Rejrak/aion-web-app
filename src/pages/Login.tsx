@@ -86,11 +86,7 @@ const Message = styled.p<{ error?: boolean }>`
   font-size: 14px;
 `;
 
-interface LoginPageProps {
-  onClick?: () => void;
-}
-
-const LoginPage: React.FC<LoginPageProps> = ({ onClick }) => {
+const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginUserContext, logoutUserContext, user } = useUser();
 
@@ -182,7 +178,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onClick }) => {
   );
 
   return (
-    <div onMouseDown={onClick}>
     <AuthContainer>
       <h2>Gestione Autenticazione</h2>
 
@@ -199,7 +194,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onClick }) => {
       <Button onClick={handleSignIn}>Accedi</Button>
       <Button logout onClick={handleLogout}>Esci</Button>
     </AuthContainer>
-    </div>
   );
 };
 

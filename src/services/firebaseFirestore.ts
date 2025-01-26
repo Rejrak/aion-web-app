@@ -8,6 +8,22 @@ import {
   setDoc,
   deleteDoc,
 } from "firebase/firestore";
+import { mapTrainingPlanFromFirebase, TrainingPlan } from "../interfaces/trainginPlan";
+
+
+
+
+export const getTrainginPlans = async (userId: string): Promise<TrainingPlan[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "trainingPlans"));
+    const trainingPlans = querySnapshot.docs
+      .filter((doc) => doc.data().userId === userId)
+      .map((doc) => ({ id: doc.id, ...doc.data() })).map((doc) => mapTrainingPlanFromFirebase(doc));
+    return trainingPlans;
+  } catch (error) {
+    throw error;
+  }
+}
 
 // Aggiungi documento
 export const addDocument = async (collectionName: string, data: any) => {

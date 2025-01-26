@@ -6,7 +6,7 @@ import {
   UserCredential,
 } from "firebase/auth";
 
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDocs, getDoc } from "firebase/firestore";
 import { db } from "../config/FirebaseConfig"; 
 import { User, userFromFirestore } from "../interfaces/User";
 
@@ -18,9 +18,18 @@ export const signUpUser = async (email: string, password: string): Promise<UserC
   }
 };
 
-export const getUserById = async (userId: string): Promise<User> => {
+export const getUsers = async (): Promise<User[]> => {
   try {
-    const userRef = doc(db, "users", userId);
+    const querySnapshot = await getDocs(collection(db, "exerciseTypes"));
+    return querySnapshot.docs.map((doc) => ({ userId: doc.id, ...doc.data() })) as User[];
+  }catch (error) {
+    throw error;
+  }
+}
+
+export const getUserById = async (userName: string): Promise<User> => {
+  try {
+    const userRef = doc(db, "users", userName);
     const docSnapshot = await getDoc(userRef);
 
     if (!docSnapshot.exists()) {

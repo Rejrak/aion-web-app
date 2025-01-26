@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, TextField, Typography, Button, Box, List, Divider, CircularProgress } from '@mui/material';
+import { Container, Paper, TextField, Typography, Button, Box, List, CircularProgress, Grow } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import ExerciseItem from './exerciseTypeItem';
 import ExerciseDialog from './exerciseDialog';
@@ -113,13 +113,12 @@ const ExerciseList: React.FC = () => {
                                 {muscleGroup}
                             </Typography>
                             <List>
-                                {exercises.map((exercise) => (
-                                    <ExerciseItem
-                                        key={exercise.id}
-                                        exercise={exercise}
-                                        onEdit={handleOpenDialog}
-                                        onDelete={handleDeleteExercise}
-                                    />
+                                {exercises.map((exercise, index) => (
+                                    <Grow in style={{ transformOrigin: '0 0 0' }} {...{ timeout: 250 * (index + 1) }} key={exercise.id} >
+                                        <div>
+                                            <ExerciseItem exercise={exercise} onEdit={handleOpenDialog} onDelete={handleDeleteExercise} />
+                                        </div>
+                                    </Grow>
                                 ))}
                             </List>
                         </Box>

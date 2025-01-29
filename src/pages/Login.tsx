@@ -1,90 +1,24 @@
-import { useState} from "react";
-import { getUserById, logoutUser } from "../services/firebaseAuth";
-import { hashPassword, verifyPassword } from "../utils/CryptoUtils";
-import { useNavigate } from "react-router-dom";
-import { User } from "../interfaces/User";
-import styled from "styled-components";
-import { useUser } from "../context/userContext";
+import React, { useState } from "react";
+import {
+  Box,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  Typography,
+  IconButton,
+  InputAdornment,
+  Container,
+  Paper,
+  Alert,
+} from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-
-const AuthContainer = styled.div`
-  width: 100%;
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #1B1E1F;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 1);
-  border-radius: 8px;
-  text-align: center;
-  font-family: Arial, sans-serif;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px;
-  background: #121212;
-  color: #fff;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  border-color: #333;
-  font-size: 16px;
-`;
-
-const InputContainer = styled.div`
-  position: relative;
-  width: 100%;
-  margin: 10px 0;
-`;
-
-const AdminCheckbox = styled.label`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  margin: 10px 0;
-  cursor: pointer;
-
-  input {
-    margin-right: 10px;
-  }
-`;
-
-const Button = styled.button<{ logout?: boolean }>`
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 5px;
-  font-size: 18px;
-  color: #fff;
-  background: ${(props) => (props.logout ? "#dc3545" : "#007bff")};
-  cursor: pointer;
-  transition: 0.3s ease-in-out;
-
-  &:hover {
-    background: ${(props) => (props.logout ? "#a71d2a" : "#0056b3")};
-  }
-`;
-
-const EyeIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #aaa;
-
-  &:hover {
-    color: #fff;
-  }
-`;
-
-const Message = styled.p<{ error?: boolean }>`
-  color: ${(props) => (props.error ? "red" : "green")};
-  font-size: 14px;
-`;
+import { useNavigate } from "react-router-dom";
+import { getUserById, logoutUser } from "../services/firebaseAuth";
+import { hashPassword, verifyPassword } from "../utils/CryptoUtils";
+import { useUser } from "../context/userContext";
+import { User } from "../interfaces/User";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -95,7 +29,7 @@ const LoginPage: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  
+
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
@@ -111,7 +45,7 @@ const LoginPage: React.FC = () => {
     }
     return true;
   };
-  
+
   const checkAdminPassword = (userPassword: string): boolean => {
     const hashedPassword = hashPassword(password);
     if (!verifyPassword(userPassword, hashedPassword)) {
@@ -134,10 +68,9 @@ const LoginPage: React.FC = () => {
       setError("Spunta la checkbox amministratore ed inserisci la password.");
       return false;
     }
-
     return true;
   };
-  
+
   const handleSignIn = async () => {
     setError(null);
 
@@ -152,7 +85,7 @@ const LoginPage: React.FC = () => {
         navigate("/");
         return true;
       }
-      
+
       if (!checkUserRoleCredential(userLogged)) return;
       if (!checkAdminPassword(userLogged.password)) return;
       if (userLogged !== null) {
@@ -160,8 +93,8 @@ const LoginPage: React.FC = () => {
       }
     } catch (error) {
       setError("Errore durante il login. Verifica le credenziali.");
-    } 
-    
+    }
+
     navigate("/");
   };
 
@@ -170,30 +103,122 @@ const LoginPage: React.FC = () => {
     await logoutUser();
   };
 
-  const passowrdComponent: JSX.Element = (
-    <InputContainer>
-      <Input type={showPassword ? "text" : "password"} placeholder="Inserisci la tua password" value={password} onChange={(e) => setPassword(e.target.value)} required={isAdmin}/>
-      <EyeIcon icon={showPassword ? faEyeSlash : faEye} onClick={togglePasswordVisibility} />
-    </InputContainer>
-  );
-
   return (
-    <AuthContainer>
-      <h2>Gestione Autenticazione</h2>
+    <Container maxWidth="xs">
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 4,
+          marginTop: 8,
+          textAlign: "center",
+          backgroundColor: "#1B1E1F",
+          color: "#fff",
+        }}
+      >
+        <Typography variant="h5" sx={{ marginBottom: 3 }}>
+          Gestione Autenticazione
+        </Typography>
 
-      <Input type="text" placeholder="Inserisci il tuo nome utente" value={email} onChange={(e) => setEmail(e.target.value)} required={true}/>
+        <TextField
+          fullWidth
+          label="Nome utente"
+          variant="outlined"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          sx={{
+            marginBottom: 2,
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "#121212",
+              color: "#fff",
+            },
+          }}
+          InputLabelProps={{
+            style: { color: "#aaa" },
+          }}
+        />
 
-      <AdminCheckbox>
-        <input type="checkbox" checked={isAdmin} onChange={(e) => setIsAdmin(e.target.checked)}/> Sono un amministratore
-      </AdminCheckbox>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+              sx={{
+                color: "#aaa",
+                "&.Mui-checked": { color: "#007bff" },
+              }}
+            />
+          }
+          label="Sono un amministratore"
+          sx={{ marginBottom: 2 }}
+        />
 
-      {isAdmin &&  passowrdComponent }
+        {isAdmin && (
+          <TextField
+            fullWidth
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            sx={{
+              marginBottom: 2,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "#121212",
+                color: "#fff",
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={togglePasswordVisibility}>
+                    <FontAwesomeIcon
+                      icon={showPassword ? faEyeSlash : faEye}
+                      style={{ color: "#aaa" }}
+                    />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            InputLabelProps={{
+              style: { color: "#aaa" },
+            }}
+          />
+        )}
 
-      {error && <Message error>{error}</Message>}
+        {error && (
+          <Alert severity="error" sx={{ marginBottom: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-      <Button onClick={handleSignIn}>Accedi</Button>
-      <Button logout onClick={handleLogout}>Esci</Button>
-    </AuthContainer>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={handleSignIn}
+          sx={{
+            backgroundColor: "#007bff",
+            marginBottom: 2,
+            "&:hover": { backgroundColor: "#0056b3" },
+          }}
+        >
+          Accedi
+        </Button>
+
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={handleLogout}
+          sx={{
+            backgroundColor: "#dc3545",
+            "&:hover": { backgroundColor: "#a71d2a" },
+          }}
+        >
+          Esci
+        </Button>
+      </Paper>
+    </Container>
   );
 };
 

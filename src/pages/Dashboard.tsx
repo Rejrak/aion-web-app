@@ -1,16 +1,18 @@
-import * as React from 'react';
-import { extendTheme, styled } from '@mui/material/styles';
+import { extendTheme } from '@mui/material/styles';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import FeaturedPlayListOutlinedIcon from '@mui/icons-material/FeaturedPlayListOutlined';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LayersIcon from '@mui/icons-material/Layers';
 import { AppProvider, Navigation, Router, Session } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import ExerciseTypeList from '../ExerciseList/exerciseTypeList';
-import { useUser } from '../../context/userContext';
+import ExerciseTypeList from '../components/ExerciseList/exerciseTypeList';
+import { useUser } from '../context/userContext';
+import TrainingPlanList from '../components/TrainingList/TrainingPlanList';
 
 
 var NAVIGATION: Navigation = [
@@ -27,6 +29,11 @@ var NAVIGATION: Navigation = [
     segment: 'exerciseTypeList',
     title: 'Lista Esercizi',
     icon: <FeaturedPlayListOutlinedIcon />,
+  },
+  {
+    segment: 'trainingPlanList',
+    title: 'Piani di Allenamento',
+    icon: <FitnessCenterIcon />,
   },
   {
     kind: 'divider',
@@ -74,9 +81,9 @@ const demoTheme = extendTheme({
 });
 
 function useDemoRouter(initialPath: string): Router {
-  const [pathname, setPathname] = React.useState(initialPath);
+  const [pathname, setPathname] = useState(initialPath);
 
-  const router = React.useMemo(() => {
+  const router = useMemo(() => {
     return {
       pathname,
       searchParams: new URLSearchParams(),
@@ -87,21 +94,29 @@ function useDemoRouter(initialPath: string): Router {
   return router;
 }
 
-export default function DashboardLayoutBasic() {
+function DashboardLayoutBasic() {
   const navigate = useNavigate();
   const router = useDemoRouter('/dashboard');
-  
   const { user, logoutUserContext } = useUser();
-  const  userSession: Session = {
-    user: {
-      name: user?.name || '',
-      email: user?.userId || '',
-      image: 'https://avatars.githubusercontent.com/u/19550456',
-    },
-  };
-  const [session, setSession] = React.useState<Session | null>(userSession);
+  var userSession: Session | null = null
+  const [session, setSession] = useState<Session | null>(userSession);
   
-  const authentication = React.useMemo(() => {
+  useEffect(()=>{
+    if(!user){
+      navigate("/auth")
+      return
+    }
+    setSession({
+      user:{
+        email: user!.userId,
+        id: user!.userId,
+        name: user!.name
+      }
+    })
+  },[user])
+  
+
+  const authentication = useMemo(() => {
     return {
       signIn: () => {
         navigate('/auth');
@@ -112,9 +127,9 @@ export default function DashboardLayoutBasic() {
       },
     };
   }, []);
-
-
-
+  
+  
+  
 
   return (
     <AppProvider
@@ -128,8 +143,11 @@ export default function DashboardLayoutBasic() {
       <DashboardLayout disableCollapsibleSidebar >
         <PageContainer title={""} breadcrumbs={[]} >
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
+          {router.pathname === '/trainingPlanList' && <TrainingPlanList />}
         </PageContainer>
       </DashboardLayout>
     </AppProvider>
   );
 }
+
+export default DashboardLayoutBasic

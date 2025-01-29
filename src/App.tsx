@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/Login'
 import { UserProvider } from './context/userContext'
-import DashboardLayoutBasic from './components/commons/Dashboard'
+import DashboardLayoutBasic from './pages/Dashboard'
 
 
 function App() {

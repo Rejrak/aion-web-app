@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, Typography, TextField, Button, List, CircularProgress, Box, Grow } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, List, CircularProgress, Box, Grow, Snackbar, Alert } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import TrainingPlanItem from './TrainingPlanItem';
 import TrainingPlanDialog from './TrainingPlanDialog';
 import { v4 as uuidv4 } from 'uuid';
-import { getTrainingPlans, addTrainingPlan, updateTrainingPlan, deleteTrainingPlan } from '../../services/firebaseTrainingPlan'; // Implementare
-
+import { getTrainingPlans, addTrainingPlan, updateTrainingPlan, deleteTrainingPlan } from '../../services/firebaseTrainingPlan';
 import { TrainingPlan } from '../../interfaces/trainginPlan';
 import { useUser } from '../../context/userContext';
 
@@ -16,7 +15,8 @@ const TrainingPlanList: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [currentPlan, setCurrentPlan] = useState<TrainingPlan | null>(null);
     const [open, setOpen] = useState(false);
-    const { loginUserContext, logoutUserContext, user } = useUser();
+    const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    const { user } = useUser();
 
     const fetchTrainingPlans = async () => {
         try {
@@ -24,7 +24,8 @@ const TrainingPlanList: React.FC = () => {
             const data = await getTrainingPlans(user!.userId);
             setTrainingPlans(data);
         } catch (err) {
-            setError('Errore durante il caricamento dei piani di allenamento.');
+            console.error("Errore nel fetch dei piani di allenamento:", err);
+            setError(err instanceof Error ? err.message : 'Errore sconosciuto');
         } finally {
             setLoading(false);
         }
@@ -45,23 +46,34 @@ const TrainingPlanList: React.FC = () => {
     };
 
     const handleSaveTrainingPlan = async (plan: TrainingPlan) => {
-        const newPlan = plan.id ? plan : { ...plan, id: uuidv4(), assignDate: plan.assignedDate.toISOString() };
-        
-        if (plan.id) {
-            await updateTrainingPlan(newPlan);
-        } else {
-            await addTrainingPlan(user!.userId,newPlan);
+        try {
+            const newPlan = plan.id ? plan : { ...plan, id: uuidv4(), assignDate: plan.assignedDate.toISOString() };
+
+            if (plan.id) {
+                await updateTrainingPlan(newPlan);
+                setTrainingPlans((prev) => prev.map((p) => (p.id === newPlan.id ? newPlan : p)));
+            } else {
+                await addTrainingPlan(user!.userId, newPlan);
+                setTrainingPlans((prev) => [...prev, newPlan]);
+            }
+            setSnackbarMessage('Piano di allenamento salvato con successo!');
+        } catch (err) {
+            console.error("Errore nel salvataggio del piano di allenamento:", err);
+        } finally {
+            handleCloseDialog();
         }
-        setTrainingPlans((prev) =>
-            newPlan.id ? prev.map((p) => (p.id === newPlan.id ? newPlan : p)) : [...prev, newPlan]
-        );
-        await fetchTrainingPlans();
-        handleCloseDialog();
     };
 
     const handleDeleteTrainingPlan = async (id: string) => {
-        await deleteTrainingPlan(user!.userId,id);
-        setTrainingPlans((prev) => prev.filter((p) => p.id !== id));
+        const confirmed = window.confirm("Sei sicuro di voler eliminare questo piano?");
+        if (!confirmed) return;
+
+        try {
+            await deleteTrainingPlan(user!.userId, id);
+            setTrainingPlans((prev) => prev.filter((p) => p.id !== id));
+        } catch (err) {
+            console.error("Errore nell'eliminazione del piano di allenamento:", err);
+        }
     };
 
     const filteredPlans = trainingPlans.filter((plan) =>
@@ -115,6 +127,12 @@ const TrainingPlanList: React.FC = () => {
                 onClose={handleCloseDialog}
                 onSave={handleSaveTrainingPlan}
             />
+
+            <Snackbar open={!!snackbarMessage} autoHideDuration={3000} onClose={() => setSnackbarMessage(null)}>
+                <Alert onClose={() => setSnackbarMessage(null)} severity="success">
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

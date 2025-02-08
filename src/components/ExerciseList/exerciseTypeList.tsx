@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Paper, TextField, Typography, Button, Box, List, CircularProgress, Grow } from '@mui/material';
+import { Container, Paper, TextField, Typography, Button, Box, List, CircularProgress, Grow, Snackbar, Alert } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import ExerciseItem from './exerciseTypeItem';
 import ExerciseDialog from './exerciseDialog';
+import ConfirmDialog from '../Commons/ConfirmDialog';
 import { v4 as uuidv4 } from 'uuid';
-import { getExerciseTypes, addExerciseType, updateExerciseType, deleteExerciseType } from '../../services/firebaseExerciseType'; // Assicurati di importare la funzione correttamente
+import { getExerciseTypes, addExerciseType, updateExerciseType, deleteExerciseType } from '../../services/firebaseExerciseType';
 
 export interface ExerciseType {
     id: string;
@@ -19,15 +20,18 @@ const ExerciseList: React.FC = () => {
     const [currentExercise, setCurrentExercise] = useState<ExerciseType | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false);
+    const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
 
     const fetchExercises = async () => {
         try {
             setLoading(true);
             const data = await getExerciseTypes();
             setExercises(data);
-            setError(null);
         } catch (err) {
-            setError('Errore durante il caricamento degli esercizi.');
+            console.error("Errore nel fetch degli esercizi:", err);
+            setError(err instanceof Error ? err.message : 'Errore sconosciuto');
         } finally {
             setLoading(false);
         }
@@ -41,32 +45,48 @@ const ExerciseList: React.FC = () => {
         setCurrentExercise(exercise);
         setOpen(true);
     };
+
     const handleCloseDialog = () => {
-        setCurrentExercise({ id: '', muscleGroup: '', name: '' });
-        setOpen(false)
+        setOpen(false);
+        setCurrentExercise(null);
     };
 
-    const handleSaveExercise  = async (exercise: ExerciseType) => {
-        var newExerciseType = exercise ;
-        if (newExerciseType.id) {
-            await updateExerciseType(newExerciseType);
-        } else {
-            newExerciseType =  { ...exercise, id: exercise.id || uuidv4() };
-            await addExerciseType(newExerciseType);
+    const handleSaveExercise = async (exercise: ExerciseType) => {
+        try {
+            const newExercise = exercise.id ? exercise : { ...exercise, id: uuidv4() };
+            
+            if (exercise.id) {
+                await updateExerciseType(newExercise);
+                setExercises((prev) => prev.map((ex) => (ex.id === newExercise.id ? newExercise : ex)));
+            } else {
+                await addExerciseType(newExercise);
+                setExercises((prev) => [...prev, newExercise]);
+            }
+            setSnackbarMessage('Esercizio salvato con successo!');
+        } catch (err) {
+            console.error("Errore nel salvataggio dell'esercizio:", err);
+        } finally {
+            handleCloseDialog();
         }
-        
-        setExercises((prev) => newExerciseType.id 
-            ? prev.map((ex) => (ex.id === newExerciseType.id ? newExerciseType : ex))
-            : [...prev, newExerciseType]
-        );
-        setCurrentExercise(null);
-        handleCloseDialog();
     };
 
     const handleDeleteExercise = async (id: string) => {
-        setExercises((prev) => prev.filter((exercise) => exercise.id !== id));
-        await deleteExerciseType(id);
+        setExerciseToDelete(id);
+        setConfirmDialogOpen(true);
+    };
+
+    const confirmDeleteExercise = async () => {
+        if (!exerciseToDelete) return;
         
+        try {
+            await deleteExerciseType(exerciseToDelete);
+            setExercises((prev) => prev.filter((exercise) => exercise.id !== exerciseToDelete));
+        } catch (err) {
+            console.error("Errore nell'eliminazione dell'esercizio:", err);
+        } finally {
+            setConfirmDialogOpen(false);
+            setExerciseToDelete(null);
+        }
     };
 
     const filteredExercises = exercises.filter(
@@ -114,7 +134,7 @@ const ExerciseList: React.FC = () => {
                             </Typography>
                             <List>
                                 {exercises.map((exercise, index) => (
-                                    <Grow in style={{ transformOrigin: '0 0 0' }} {...{ timeout: 250 * (index + 1) }} key={exercise.id} >
+                                    <Grow in style={{ transformOrigin: '0 0 0' }} {...{ timeout: 250 * (index + 1) }} key={exercise.id}>
                                         <div>
                                             <ExerciseItem exercise={exercise} onEdit={handleOpenDialog} onDelete={handleDeleteExercise} />
                                         </div>
@@ -125,14 +145,16 @@ const ExerciseList: React.FC = () => {
                     ))
                 )}
             </Paper>
+            <ConfirmDialog open={confirmDialogOpen} title="Conferma Eliminazione" message="Sei sicuro di voler eliminare questo esercizio?" onClose={() => setConfirmDialogOpen(false)} onConfirm={confirmDeleteExercise} />
 
-            <ExerciseDialog
-                open={open}
-                exercise={currentExercise}
-                muscleGroups={Object.keys(groupedExercises)}
-                onClose={handleCloseDialog}
-                onSave={handleSaveExercise}
-            />
+            <ExerciseDialog open={open} exercise={currentExercise} onClose={handleCloseDialog} onSave={handleSaveExercise} muscleGroups={Object.keys(groupedExercises)}/>
+            
+            <Snackbar open={!!snackbarMessage} autoHideDuration={3000} onClose={() => setSnackbarMessage(null)}>
+                <Alert onClose={() => setSnackbarMessage(null)} severity="success">
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar> 
+
         </Container>
     );
 };

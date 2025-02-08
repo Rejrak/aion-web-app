@@ -56,7 +56,7 @@ const ExerciseDialog: React.FC<ExerciseDialogProps> = ({ open, exercise, muscleG
 
                 <Select
                     fullWidth
-                    value={useNewGroup ? 'new' : newExercise.muscleGroup}
+                    value={useNewGroup ? 'new' : newExercise.muscleGroup || muscleGroups[0]}
                     onChange={(e) => {
                         if (e.target.value === 'new') {
                             setUseNewGroup(true);

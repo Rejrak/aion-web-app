@@ -1,101 +1,106 @@
-import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  Checkbox,
-  FormControlLabel,
-  Button,
-  Typography,
-  IconButton,
-  InputAdornment,
-  Container,
-  Paper,
-  Alert,
-} from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import React, { useEffect, useReducer } from "react";
+import { Container, Paper, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { getUserById, logoutUser } from "../services/firebaseAuth";
 import { hashPassword, verifyPassword } from "../utils/CryptoUtils";
 import { useUser } from "../context/userContext";
-import { User } from "../interfaces/User";
+import EmailInput from "../components/LoginComponents/EmailInput";
+import AdminCheckbox from "../components/LoginComponents/AdminCheckbox";
+import PasswordInput from "../components/LoginComponents/PasswordInput";
+import ErrorAlert from "../components/LoginComponents/ErrorAlert";
+import LoginButtons from "../components/LoginComponents/LoginButtons";
 
-const LoginPage: React.FC = () => {
+// Definizione dello stato iniziale
+interface State {
+  email: string;
+  password: string;
+  isAdmin: boolean;
+  showPassword: boolean;
+  error: string | null;
+}
+
+const initialState: State = {
+  email: "",
+  password: "",
+  isAdmin: false,
+  showPassword: false,
+  error: null,
+};
+
+const reducer = (state: State, action: { type: string; payload?: any }) => {
+  switch (action.type) {
+    case "SET_EMAIL":
+      return { ...state, email: action.payload };
+    case "SET_PASSWORD":
+      return { ...state, password: action.payload };
+    case "TOGGLE_ADMIN":
+      return { ...state, isAdmin: !state.isAdmin };
+    case "TOGGLE_PASSWORD_VISIBILITY":
+      return { ...state, showPassword: !state.showPassword };
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+};
+
+const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { loginUserContext, logoutUserContext, user } = useUser();
+  const { loginUserContext, logoutUserContext } = useUser();
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword((prevState) => !prevState);
-  };
-
-  const checkRequiredCredential = (): boolean => {
-    if (!email) {
-      setError("La mail è obbligatoria.");
-      return false;
+  useEffect(() => {
+    if (state.error) {
+      const timer = setTimeout(() => dispatch({ type: "CLEAR_ERROR" }), 3000);
+      return () => clearTimeout(timer);
     }
-    if (isAdmin && !password) {
-      setError("La password è obbligatoria per gli amministratori.");
-      return false;
-    }
-    return true;
-  };
-
-  const checkAdminPassword = (userPassword: string): boolean => {
-    const hashedPassword = hashPassword(password);
-    if (!verifyPassword(userPassword, hashedPassword)) {
-      setError("Credenziali errate.");
-      return false;
-    }
-    return true;
-  };
-
-  const checkUserRoleCredential = (userLogged: User): boolean => {
-    if (!userLogged) {
-      setError("Utente non trovato.");
-      return false;
-    }
-    if (isAdmin && !userLogged.admin) {
-      setError("Non sei un amministratore.");
-      return false;
-    }
-    if (password === "" && userLogged.admin) {
-      setError("Spunta la checkbox amministratore ed inserisci la password.");
-      return false;
-    }
-    return true;
-  };
+  }, [state.error]);
 
   const handleSignIn = async () => {
-    setError(null);
+    dispatch({ type: "CLEAR_ERROR" });
 
-    if (!checkRequiredCredential()) return;
-
-    try {
-      const userLogged = await getUserById(email);
-      const isStandardUser = !isAdmin && !userLogged.admin;
-
-      if (isStandardUser) {
-        loginUserContext(userLogged);
-        navigate("/");
-        return true;
-      }
-
-      if (!checkUserRoleCredential(userLogged)) return;
-      if (!checkAdminPassword(userLogged.password)) return;
-      if (userLogged !== null) {
-        loginUserContext(userLogged);
-      }
-    } catch (error) {
-      setError("Errore durante il login. Verifica le credenziali.");
+    if (!state.email) {
+      dispatch({ type: "SET_ERROR", payload: "La mail è obbligatoria." });
+      return;
+    }
+    if (state.isAdmin && !state.password) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: "La password è obbligatoria per gli amministratori.",
+      });
+      return;
     }
 
-    navigate("/");
+    try {
+      const userLogged = await getUserById(state.email);
+      if (!userLogged) {
+        dispatch({ type: "SET_ERROR", payload: "Utente non trovato." });
+        return;
+      }
+
+      if (state.isAdmin && !userLogged.admin) {
+        dispatch({ type: "SET_ERROR", payload: "Non sei un amministratore." });
+        return;
+      }
+
+      if (state.isAdmin) {
+        const hashedPassword = hashPassword(state.password);
+        if (!verifyPassword(userLogged.password, hashedPassword)) {
+          dispatch({ type: "SET_ERROR", payload: "Credenziali errate." });
+          return;
+        }
+      }
+
+      loginUserContext(userLogged);
+      navigate("/");
+    } catch (error) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: "Errore durante il login. Verifica le credenziali.",
+      });
+    }
   };
 
   const handleLogout = async () => {
@@ -105,121 +110,26 @@ const LoginPage: React.FC = () => {
 
   return (
     <Container maxWidth="xs">
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 4,
-          marginTop: 8,
-          textAlign: "center",
-          backgroundColor: "#1B1E1F",
-          color: "#fff",
-        }}
-      >
-        <Typography variant="h5" sx={{ marginBottom: 3 }}>
-          Gestione Autenticazione
-        </Typography>
+      <Paper elevation={3} sx={{ padding: 4, marginTop: 8, textAlign: "center", backgroundColor: "#1B1E1F", color: "#fff" }}>
+        <Typography variant="h5" sx={{ marginBottom: 3 }}>Gestione Autenticazione</Typography>
+        
+        <EmailInput value={state.email} onChange={(value) => dispatch({ type: "SET_EMAIL", payload: value })} />
+        <AdminCheckbox checked={state.isAdmin} onChange={() => dispatch({ type: "TOGGLE_ADMIN" })} />
 
-        <TextField
-          fullWidth
-          label="Nome utente"
-          variant="outlined"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          sx={{
-            marginBottom: 2,
-            "& .MuiOutlinedInput-root": {
-              backgroundColor: "#121212",
-              color: "#fff",
-            },
-          }}
-          InputLabelProps={{
-            style: { color: "#aaa" },
-          }}
-        />
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-              sx={{
-                color: "#aaa",
-                "&.Mui-checked": { color: "#007bff" },
-              }}
-            />
-          }
-          label="Sono un amministratore"
-          sx={{ marginBottom: 2 }}
-        />
-
-        {isAdmin && (
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            variant="outlined"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            sx={{
-              marginBottom: 2,
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#121212",
-                color: "#fff",
-              },
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={togglePasswordVisibility}>
-                    <FontAwesomeIcon
-                      icon={showPassword ? faEyeSlash : faEye}
-                      style={{ color: "#aaa" }}
-                    />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            InputLabelProps={{
-              style: { color: "#aaa" },
-            }}
+        {state.isAdmin && (
+          <PasswordInput
+            value={state.password}
+            showPassword={state.showPassword}
+            onChange={(value) => dispatch({ type: "SET_PASSWORD", payload: value })}
+            toggleVisibility={() => dispatch({ type: "TOGGLE_PASSWORD_VISIBILITY" })}
           />
         )}
 
-        {error && (
-          <Alert severity="error" sx={{ marginBottom: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={handleSignIn}
-          sx={{
-            backgroundColor: "#007bff",
-            marginBottom: 2,
-            "&:hover": { backgroundColor: "#0056b3" },
-          }}
-        >
-          Accedi
-        </Button>
-
-        <Button
-          variant="contained"
-          fullWidth
-          onClick={handleLogout}
-          sx={{
-            backgroundColor: "#dc3545",
-            "&:hover": { backgroundColor: "#a71d2a" },
-          }}
-        >
-          Esci
-        </Button>
+        <ErrorAlert error={state.error} />
+        <LoginButtons onLogin={handleSignIn} onLogout={handleLogout} />
       </Paper>
     </Container>
   );
 };
 
-export default LoginPage;
+export default LoginForm;

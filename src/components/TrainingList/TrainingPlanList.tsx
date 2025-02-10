@@ -8,7 +8,12 @@ import { getTrainingPlans, addTrainingPlan, updateTrainingPlan, deleteTrainingPl
 import { TrainingPlan } from '../../interfaces/trainginPlan';
 import { useUser } from '../../context/userContext';
 
-const TrainingPlanList: React.FC = () => {
+interface TrainingPlanListProps {
+    onSelectTrainingPlan: (plan: TrainingPlan) => void;
+}
+
+
+const TrainingPlanList: React.FC<TrainingPlanListProps> = ({ onSelectTrainingPlan }) => {
     const [trainingPlans, setTrainingPlans] = useState<TrainingPlan[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
@@ -108,7 +113,7 @@ const TrainingPlanList: React.FC = () => {
                     <List>
                         {filteredPlans.map((plan, index) => (
                             <Grow in style={{ transformOrigin: '0 0 0' }} {...{ timeout: 250 * (index + 1) }} key={plan.id}>
-                                <div>
+                                <div onClick={() => onSelectTrainingPlan(plan)} style={{ cursor: 'pointer' }}>
                                     <TrainingPlanItem
                                         trainingPlan={plan}
                                         onEdit={handleOpenDialog}

@@ -4,22 +4,25 @@ import { useNavigate } from "react-router-dom";
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import FeaturedPlayListOutlinedIcon from '@mui/icons-material/FeaturedPlayListOutlined';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import DescriptionIcon from '@mui/icons-material/Description';
-import LayersIcon from '@mui/icons-material/Layers';
+// import BarChartIcon from '@mui/icons-material/BarChart';
+// import DescriptionIcon from '@mui/icons-material/Description';
+// import LayersIcon from '@mui/icons-material/Layers';
 import { AppProvider, Navigation, Router, Session } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import ExerciseTypeList from '../components/ExerciseList/exerciseTypeList';
 import { useUser } from '../context/userContext';
 import TrainingPlanList from '../components/TrainingList/TrainingPlanList';
+import { TrainingPlan } from '../interfaces/trainginPlan';
+import { Button } from '@mui/material';
+import WorkoutList from '../components/WorkoutList/WorkoutList';
 
 
 var NAVIGATION: Navigation = [
-  // {
-  //   kind: 'header',
-  //   title: 'Main ',
-  // },
+  {
+    kind: 'header',
+    title: 'Admin ',
+  },
   {
     segment: 'dashboard',
     title: 'Dashboard',
@@ -31,39 +34,39 @@ var NAVIGATION: Navigation = [
     icon: <FeaturedPlayListOutlinedIcon />,
   },
   {
+    kind: 'divider',
+  },
+  {
     segment: 'trainingPlanList',
     title: 'Piani di Allenamento',
     icon: <FitnessCenterIcon />,
   },
-  {
-    kind: 'divider',
-  },
-  {
-    kind: 'header',
-    title: 'Analytics',
-  },
-  {
-    segment: 'reports',
-    title: 'Reports',
-    icon: <BarChartIcon />,
-    children: [
-      {
-        segment: 'sales',
-        title: 'Sales',
-        icon: <DescriptionIcon />,
-      },
-      {
-        segment: 'traffic',
-        title: 'Traffic',
-        icon: <DescriptionIcon />,
-      },
-    ],
-  },
-  {
-    segment: 'integrations',
-    title: 'Integrations',
-    icon: <LayersIcon />,
-  },
+  // {
+  //   kind: 'header',
+  //   title: 'Analytics',
+  // },
+  // {
+  //   segment: 'reports',
+  //   title: 'Reports',
+  //   icon: <BarChartIcon />,
+  //   children: [
+  //     {
+  //       segment: 'sales',
+  //       title: 'Sales',
+  //       icon: <DescriptionIcon />,
+  //     },
+  //     {
+  //       segment: 'traffic',
+  //       title: 'Traffic',
+  //       icon: <DescriptionIcon />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   segment: 'integrations',
+  //   title: 'Integrations',
+  //   icon: <LayersIcon />,
+  // },
 ];
 
 const demoTheme = extendTheme({
@@ -98,8 +101,8 @@ function DashboardLayoutBasic() {
   const navigate = useNavigate();
   const router = useDemoRouter('/dashboard');
   const { user, logoutUserContext } = useUser();
-  var userSession: Session | null = null
-  const [session, setSession] = useState<Session | null>(userSession);
+  const [session, setSession] = useState<Session | null>(null);
+  const [selectedTrainingPlan, setSelectedTrainingPlan] = useState<TrainingPlan | null>(null);
   
   useEffect(()=>{
     if(!user){
@@ -114,7 +117,6 @@ function DashboardLayoutBasic() {
       }
     })
   },[user])
-  
 
   const authentication = useMemo(() => {
     return {
@@ -143,7 +145,8 @@ function DashboardLayoutBasic() {
       <DashboardLayout disableCollapsibleSidebar >
         <PageContainer title={""} breadcrumbs={[]} >
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
-          {router.pathname === '/trainingPlanList' && <TrainingPlanList />}
+          {router.pathname === '/trainingPlanList' && !selectedTrainingPlan && <TrainingPlanList onSelectTrainingPlan={setSelectedTrainingPlan} /> }
+          {selectedTrainingPlan && <WorkoutList trainingPlan={selectedTrainingPlan} onBack={() => setSelectedTrainingPlan(null)} /> }
         </PageContainer>
       </DashboardLayout>
     </AppProvider>

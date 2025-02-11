@@ -1,8 +1,24 @@
 import { Workout } from '../../interfaces/trainginPlan';
-import { Card, CardContent, CardActions, Typography } from '@mui/material';
+import {
+    Typography,
+    IconButton,
+    TextField,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    Button,
+    Card,
+    CardContent,
+    CardActions,
+    useMediaQuery,
+} from '@mui/material';
+import { Edit, Delete, Save, Cancel, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import React, { useState } from 'react';
-import { List, ListItem, ListItemText, IconButton, TextField, Button } from '@mui/material';
-import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
 interface WorkoutItemProps {
     workout: Workout;
@@ -13,176 +29,165 @@ interface WorkoutItemProps {
 const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, onEdit, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedWorkout, setEditedWorkout] = useState(workout);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    const handleEditClick = () => {
-        setIsEditing(true);
-    };
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+    const handleEditClick = () => setIsEditing(true);
     const handleSaveClick = () => {
         onEdit(editedWorkout);
         setIsEditing(false);
     };
-
     const handleCancelClick = () => {
         setEditedWorkout(workout);
         setIsEditing(false);
     };
 
-    const handleChange = (field: string, value: any) => {
-        setEditedWorkout({ ...editedWorkout, [field]: value });
-    };
-
     const handleExerciseChange = (index: number, field: string, value: any) => {
-        const updatedExercises = editedWorkout.exercises.map((ex, i) => 
+        const updatedExercises = editedWorkout.exercises.map((ex, i) =>
             i === index ? { ...ex, [field]: value } : ex
         );
         setEditedWorkout({ ...editedWorkout, exercises: updatedExercises });
     };
 
+    // Eliminazione di un esercizio dal workout
+    const handleDeleteExercise = (index: number) => {
+        const updatedExercises = editedWorkout.exercises.filter((_, i) => i !== index);
+        setEditedWorkout({ ...editedWorkout, exercises: updatedExercises });
+    };
+
+    // Ordinamento per gruppo muscolare
+    const sortExercises = () => {
+        const sortedExercises = [...editedWorkout.exercises].sort((a, b) => {
+            if (a.exerciseMuscleGroup < b.exerciseMuscleGroup) return sortOrder === 'asc' ? -1 : 1;
+            if (a.exerciseMuscleGroup > b.exerciseMuscleGroup) return sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        setEditedWorkout({ ...editedWorkout, exercises: sortedExercises });
+    };
+
     return (
-        <Card sx={{ marginBottom: "20px" }}>
-            <CardContent>
-                {isEditing ? (
-                    <TextField
-                        label="Workout Name"
-                        value={editedWorkout.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
-                        fullWidth
-                    />
-                ) : (
-                    <Typography variant="h5" component="div">
-                        {workout.name}
-                    </Typography>
-                )}
-                <Card sx={{ marginTop: "20px" }}>
-                    <CardContent>
-                        <Typography variant="h6" component="div">
-                            Exercises
-                        </Typography>
-                        <List>
+        <Paper sx={{ padding: 3, marginBottom: "20px" }}>
+            {isEditing ? (
+                <TextField
+                    label="Workout Name"
+                    value={editedWorkout.name}
+                    onChange={(e) => setEditedWorkout({ ...editedWorkout, name: e.target.value })}
+                    fullWidth
+                    sx={{ marginBottom: 2 }}
+                />
+            ) : (
+                <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                    {workout.name}
+                </Typography>
+            )}
+
+            {/* ✅ VERSIONE TABELLARE (SOLO DESKTOP) */}
+            {!isMobile && (
+                <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Tipo Esercizio</TableCell>
+                                <TableCell>
+                                    Muscoli Coinvolti
+                                    <IconButton onClick={sortExercises} size="small">
+                                        {sortOrder === 'asc' ? <ArrowUpward /> : <ArrowDownward />}
+                                    </IconButton>
+                                </TableCell>
+                                <TableCell>Serie</TableCell>
+                                <TableCell>Ripetizioni</TableCell>
+                                <TableCell>Durata</TableCell>
+                                <TableCell>Riposo</TableCell>
+                                <TableCell>Note</TableCell>
+                                {isEditing && <TableCell>Azioni</TableCell>}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
                             {editedWorkout.exercises.map((ex, index) => (
-                                <ListItem key={ex.id} sx={{ flexDirection: 'column', alignItems: 'flex-start', padding: '10px', borderBottom: '1px solid #e0e0e0' }}>
+                                <TableRow key={ex.id}>
                                     {isEditing ? (
                                         <>
-                                            <TextField
-                                                label="Exercise Type"
-                                                value={ex.exerciseTypeName}
-                                                onChange={(e) => handleExerciseChange(index, 'exerciseTypeName', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Muscle Group"
-                                                value={ex.exerciseMuscleGroup}
-                                                onChange={(e) => handleExerciseChange(index, 'exerciseMuscleGroup', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Series"
-                                                value={ex.series}
-                                                onChange={(e) => handleExerciseChange(index, 'series', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Repetitions"
-                                                value={ex.repetitions}
-                                                onChange={(e) => handleExerciseChange(index, 'repetitions', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Duration (minutes)"
-                                                value={ex.duration.minutes}
-                                                onChange={(e) => handleExerciseChange(index, 'duration', { ...ex.duration, minutes: e.target.value })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Duration (seconds)"
-                                                value={ex.duration.seconds}
-                                                onChange={(e) => handleExerciseChange(index, 'duration', { ...ex.duration, seconds: e.target.value })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Rest (minutes)"
-                                                value={ex.rest.minutes}
-                                                onChange={(e) => handleExerciseChange(index, 'rest', { ...ex.rest, minutes: e.target.value })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Rest (seconds)"
-                                                value={ex.rest.seconds}
-                                                onChange={(e) => handleExerciseChange(index, 'rest', { ...ex.rest, seconds: e.target.value })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Notes"
-                                                value={ex.notes}
-                                                onChange={(e) => handleExerciseChange(index, 'notes', e.target.value)}
-                                                fullWidth
-                                            />
+                                            <TableCell>
+                                                <TextField
+                                                    value={ex.exerciseTypeName}
+                                                    onChange={(e) => handleExerciseChange(index, 'exerciseTypeName', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    value={ex.exerciseMuscleGroup}
+                                                    onChange={(e) => handleExerciseChange(index, 'exerciseMuscleGroup', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    value={ex.series}
+                                                    onChange={(e) => handleExerciseChange(index, 'series', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    value={ex.repetitions}
+                                                    onChange={(e) => handleExerciseChange(index, 'repetitions', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </TableCell>
+                                            <TableCell>{ex.duration.minutes} min {ex.duration.seconds} sec</TableCell>
+                                            <TableCell>{ex.rest.minutes} min {ex.rest.seconds} sec</TableCell>
+                                            <TableCell>{ex.notes || "-"}</TableCell>
+                                            <TableCell>
+                                                <IconButton color="error" onClick={() => handleDeleteExercise(index)}>
+                                                    <Delete />
+                                                </IconButton>
+                                            </TableCell>
                                         </>
                                     ) : (
-                                        <ListItemText
-                                            primary={
-                                                <Typography variant="h6" component="div">
-                                                    {`${index + 1}. ${ex.exerciseTypeName}`}
-                                                </Typography>
-                                            }
-                                            secondary={
-                                                <>
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        Muscle Group: {ex.exerciseMuscleGroup}
-                                                    </Typography>
-                                                    <br />
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        Series: {ex.series}, Repetitions: {ex.repetitions}
-                                                    </Typography>
-                                                    <br />
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        Duration: {ex.duration.minutes} min {ex.duration.seconds} sec
-                                                    </Typography>
-                                                    <br />
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        Rest: {ex.rest.minutes} min {ex.rest.seconds} sec
-                                                    </Typography>
-                                                    {ex.notes && (
-                                                        <>
-                                                            <br />
-                                                            <Typography component="span" variant="body2" color="text.secondary">
-                                                                Notes: {ex.notes}
-                                                            </Typography>
-                                                        </>
-                                                    )}
-                                                </>
-                                            }
-                                        />
+                                        <>
+                                            <TableCell>{ex.exerciseTypeName}</TableCell>
+                                            <TableCell>{ex.exerciseMuscleGroup}</TableCell>
+                                            <TableCell>{ex.series}</TableCell>
+                                            <TableCell>{ex.repetitions}</TableCell>
+                                            <TableCell>{ex.duration.minutes} min {ex.duration.seconds} sec</TableCell>
+                                            <TableCell>{ex.rest.minutes} min {ex.rest.seconds} sec</TableCell>
+                                            <TableCell>{ex.notes || "-"}</TableCell>
+                                        </>
                                     )}
-                                </ListItem>
+                                </TableRow>
                             ))}
-                        </List>
-                    </CardContent>
-                </Card>
-            </CardContent>
-            <CardActions>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 {isEditing ? (
                     <>
-                        <IconButton edge="end" aria-label="save" onClick={handleSaveClick}>
-                            <Save />
-                        </IconButton>
-                        <IconButton edge="end" aria-label="cancel" onClick={handleCancelClick}>
-                            <Cancel />
-                        </IconButton>
+                        <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSaveClick}>
+                            Salva
+                        </Button>
+                        <Button variant="outlined" color="secondary" startIcon={<Cancel />} onClick={handleCancelClick}>
+                            Annulla
+                        </Button>
                     </>
                 ) : (
                     <>
-                        <IconButton edge="end" aria-label="edit" onClick={handleEditClick}>
-                            <Edit />
-                        </IconButton>
-                        <IconButton edge="end" aria-label="delete" onClick={() => onDelete(workout.id)}>
-                            <Delete />
-                        </IconButton>
+                        <Button variant="contained" color="warning" startIcon={<Edit />} onClick={handleEditClick}>
+                            Modifica
+                        </Button>
+                        <Button variant="contained" color="error" startIcon={<Delete />} onClick={() => onDelete(workout.id)}>
+                            Elimina Workout
+                        </Button>
                     </>
                 )}
-            </CardActions>
-        </Card>
+            </div>
+        </Paper>
     );
 };
 

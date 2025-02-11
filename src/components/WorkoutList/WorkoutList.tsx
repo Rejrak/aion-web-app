@@ -91,11 +91,11 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
     };
 
     return (
-        <Container sx={{ marginTop: 0, marginBottom: 4 }}>
+        <Container sx={{ marginTop: 0, marginBottom: 4, width: '100%'}} >
             <Button variant="outlined" color="secondary" startIcon={<ArrowBack />} onClick={onBack}>
                 Torna Indietro
             </Button>
-            <Paper elevation={0} sx={{ padding: 3, marginTop: 4, backgroundColor: 'transparent', boxShadow: 'none' }}>
+            <Paper elevation={0} sx={{ padding: 0, marginTop: 4, backgroundColor: 'transparent', boxShadow: 'none' }}>
                 <Typography variant="h5" sx={{ marginBottom: 2 }}>Lista Workout</Typography>
                 <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => handleOpenDialog()}>
                     Aggiungi Workout

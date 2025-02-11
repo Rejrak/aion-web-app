@@ -1,24 +1,9 @@
+import React, { useState, useCallback } from 'react';
 import { Workout } from '../../interfaces/trainginPlan';
-import {
-    Typography,
-    IconButton,
-    TextField,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Button,
-    Card,
-    CardContent,
-    CardActions,
-    useMediaQuery,
-} from '@mui/material';
-import { Edit, Delete, Save, Cancel, ArrowUpward, ArrowDownward } from '@mui/icons-material';
-import React, { useState } from 'react';
+import { Paper, Typography, TextField, Button, IconButton, useMediaQuery } from '@mui/material';
+import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import WorkoutTable from './WorkoutTable';
 
 interface WorkoutItemProps {
     workout: Workout;
@@ -30,7 +15,6 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, onEdit, onDelete }) 
     const [isEditing, setIsEditing] = useState(false);
     const [editedWorkout, setEditedWorkout] = useState(workout);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -44,148 +28,88 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, onEdit, onDelete }) 
         setIsEditing(false);
     };
 
-    const handleExerciseChange = (index: number, field: string, value: any) => {
-        const updatedExercises = editedWorkout.exercises.map((ex, i) =>
-            i === index ? { ...ex, [field]: value } : ex
-        );
-        setEditedWorkout({ ...editedWorkout, exercises: updatedExercises });
-    };
+    const handleExerciseChange = useCallback((index: number, field: string, value: any) => {
+        setEditedWorkout((prevWorkout) => ({
+            ...prevWorkout,
+            exercises: prevWorkout.exercises.map((ex, i) => 
+                i === index ? { ...ex, [field]: value } : ex
+            )
+        }));
+    }, []);
 
-    // Eliminazione di un esercizio dal workout
-    const handleDeleteExercise = (index: number) => {
-        const updatedExercises = editedWorkout.exercises.filter((_, i) => i !== index);
-        setEditedWorkout({ ...editedWorkout, exercises: updatedExercises });
-    };
+    const handleDeleteExercise = useCallback((index: number) => {
+        setEditedWorkout((prevWorkout) => ({
+            ...prevWorkout,
+            exercises: prevWorkout.exercises.filter((_, i) => i !== index)
+        }));
+    }, []);
 
-    // Ordinamento per gruppo muscolare
-    const sortExercises = () => {
-        const sortedExercises = [...editedWorkout.exercises].sort((a, b) => {
-            if (a.exerciseMuscleGroup < b.exerciseMuscleGroup) return sortOrder === 'asc' ? -1 : 1;
-            if (a.exerciseMuscleGroup > b.exerciseMuscleGroup) return sortOrder === 'asc' ? 1 : -1;
-            return 0;
-        });
-
+    const sortExercises = useCallback(() => {
+        setEditedWorkout((prevWorkout) => ({
+            ...prevWorkout,
+            exercises: [...prevWorkout.exercises].sort((a, b) => 
+                sortOrder === 'asc'
+                    ? a.exerciseMuscleGroup.localeCompare(b.exerciseMuscleGroup)
+                    : b.exerciseMuscleGroup.localeCompare(a.exerciseMuscleGroup)
+            )
+        }));
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        setEditedWorkout({ ...editedWorkout, exercises: sortedExercises });
-    };
+    }, [sortOrder]);
+
+    const renderWorkoutTitle = () => (
+        isEditing ? (
+            <TextField
+                label="Workout Name"
+                value={editedWorkout.name}
+                onChange={(e) => setEditedWorkout({ ...editedWorkout, name: e.target.value })}
+                fullWidth
+                sx={{ marginBottom: 2 }}
+            />
+        ) : (
+            <Typography variant="h5" sx={{ marginBottom: 2 }}>
+                {workout.name}
+            </Typography>
+        )
+    );
+
+    const renderActionButtons = () => (
+        isEditing ? (
+            <>
+                <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSaveClick}>
+                    Salva
+                </Button>
+                <Button variant="outlined" color="secondary" startIcon={<Cancel />} onClick={handleCancelClick}>
+                    Annulla
+                </Button>
+            </>
+        ) : (
+            <>
+                <Button variant="contained" color="warning" startIcon={<Edit />} onClick={handleEditClick}>
+                    Modifica
+                </Button>
+                <Button variant="contained" color="error" startIcon={<Delete />} onClick={() => onDelete(workout.id)}>
+                    Elimina Workout
+                </Button>
+            </>
+        )
+    );
 
     return (
         <Paper sx={{ padding: 3, marginBottom: "20px" }}>
-            {isEditing ? (
-                <TextField
-                    label="Workout Name"
-                    value={editedWorkout.name}
-                    onChange={(e) => setEditedWorkout({ ...editedWorkout, name: e.target.value })}
-                    fullWidth
-                    sx={{ marginBottom: 2 }}
-                />
-            ) : (
-                <Typography variant="h5" sx={{ marginBottom: 2 }}>
-                    {workout.name}
-                </Typography>
-            )}
-
-            {/* ✅ VERSIONE TABELLARE (SOLO DESKTOP) */}
+            {renderWorkoutTitle()}
             {!isMobile && (
-                <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Tipo Esercizio</TableCell>
-                                <TableCell>
-                                    Muscoli Coinvolti
-                                    <IconButton onClick={sortExercises} size="small">
-                                        {sortOrder === 'asc' ? <ArrowUpward /> : <ArrowDownward />}
-                                    </IconButton>
-                                </TableCell>
-                                <TableCell>Serie</TableCell>
-                                <TableCell>Ripetizioni</TableCell>
-                                <TableCell>Durata</TableCell>
-                                <TableCell>Riposo</TableCell>
-                                <TableCell>Note</TableCell>
-                                {isEditing && <TableCell>Azioni</TableCell>}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {editedWorkout.exercises.map((ex, index) => (
-                                <TableRow key={ex.id}>
-                                    {isEditing ? (
-                                        <>
-                                            <TableCell>
-                                                <TextField
-                                                    value={ex.exerciseTypeName}
-                                                    onChange={(e) => handleExerciseChange(index, 'exerciseTypeName', e.target.value)}
-                                                    fullWidth
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={ex.exerciseMuscleGroup}
-                                                    onChange={(e) => handleExerciseChange(index, 'exerciseMuscleGroup', e.target.value)}
-                                                    fullWidth
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={ex.series}
-                                                    onChange={(e) => handleExerciseChange(index, 'series', e.target.value)}
-                                                    fullWidth
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <TextField
-                                                    value={ex.repetitions}
-                                                    onChange={(e) => handleExerciseChange(index, 'repetitions', e.target.value)}
-                                                    fullWidth
-                                                />
-                                            </TableCell>
-                                            <TableCell>{ex.duration.minutes} min {ex.duration.seconds} sec</TableCell>
-                                            <TableCell>{ex.rest.minutes} min {ex.rest.seconds} sec</TableCell>
-                                            <TableCell>{ex.notes || "-"}</TableCell>
-                                            <TableCell>
-                                                <IconButton color="error" onClick={() => handleDeleteExercise(index)}>
-                                                    <Delete />
-                                                </IconButton>
-                                            </TableCell>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <TableCell>{ex.exerciseTypeName}</TableCell>
-                                            <TableCell>{ex.exerciseMuscleGroup}</TableCell>
-                                            <TableCell>{ex.series}</TableCell>
-                                            <TableCell>{ex.repetitions}</TableCell>
-                                            <TableCell>{ex.duration.minutes} min {ex.duration.seconds} sec</TableCell>
-                                            <TableCell>{ex.rest.minutes} min {ex.rest.seconds} sec</TableCell>
-                                            <TableCell>{ex.notes || "-"}</TableCell>
-                                        </>
-                                    )}
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <WorkoutTable 
+                    workout={editedWorkout} 
+                    isEditing={isEditing} 
+                    sortOrder={sortOrder} 
+                    onSort={sortExercises} 
+                    onExerciseChange={handleExerciseChange} 
+                    onDeleteExercise={handleDeleteExercise}
+                />
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {isEditing ? (
-                    <>
-                        <Button variant="contained" color="primary" startIcon={<Save />} onClick={handleSaveClick}>
-                            Salva
-                        </Button>
-                        <Button variant="outlined" color="secondary" startIcon={<Cancel />} onClick={handleCancelClick}>
-                            Annulla
-                        </Button>
-                    </>
-                ) : (
-                    <>
-                        <Button variant="contained" color="warning" startIcon={<Edit />} onClick={handleEditClick}>
-                            Modifica
-                        </Button>
-                        <Button variant="contained" color="error" startIcon={<Delete />} onClick={() => onDelete(workout.id)}>
-                            Elimina Workout
-                        </Button>
-                    </>
-                )}
+                {renderActionButtons()}
             </div>
         </Paper>
     );

@@ -108,7 +108,7 @@ const ExerciseList: React.FC = () => {
     const groupedExercises = groupByMuscle(filteredExercises);
 
     return (
-        <Container component="main" sx={{ marginTop: 0, marginBottom: 4 }}>
+        <Container component="main" sx={{ marginTop: 0, marginBottom: 4 }} style={{ minWidth: '100%' }}>
             <Paper elevation={0} sx={{ padding: 3, marginTop: 4, backgroundColor: 'transparent', boxShadow: 'none' }}>
                 <TextField fullWidth label="Cerca per nome o gruppo muscolare" variant="outlined" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} sx={{ marginBottom: 2 }}/>
 

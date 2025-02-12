@@ -86,7 +86,7 @@ const TrainingPlanList: React.FC<TrainingPlanListProps> = ({ onSelectTrainingPla
     );
 
     return (
-        <Container sx={{ marginTop: 0, marginBottom: 4 }}>
+        <Container sx={{ marginTop: 0, marginBottom: 4 }} style={{ minWidth: '100%' }}>
             <Paper elevation={0} sx={{ padding: 3, marginTop: 4, backgroundColor: 'transparent', boxShadow: 'none' }}>
                 <TextField
                     fullWidth

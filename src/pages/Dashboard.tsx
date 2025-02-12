@@ -142,11 +142,15 @@ function DashboardLayoutBasic() {
       authentication={authentication}
       session={session}
     >
-      <DashboardLayout disableCollapsibleSidebar >
-        <PageContainer title={""} breadcrumbs={[]} >
+      <DashboardLayout disableCollapsibleSidebar style={{ flex: 1, width: '100%' }}>
+        <PageContainer 
+          title={""} 
+          breadcrumbs={[]} 
+          style={{ flex: 1, maxWidth: 'none' }}
+        >
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
           {router.pathname === '/trainingPlanList' && !selectedTrainingPlan && <TrainingPlanList onSelectTrainingPlan={setSelectedTrainingPlan} /> }
-          {selectedTrainingPlan && <WorkoutList trainingPlan={selectedTrainingPlan} onBack={() => setSelectedTrainingPlan(null)} /> }
+          {router.pathname === '/trainingPlanList' && selectedTrainingPlan && <WorkoutList trainingPlan={selectedTrainingPlan} onBack={() => setSelectedTrainingPlan(null)} /> }
         </PageContainer>
       </DashboardLayout>
     </AppProvider>

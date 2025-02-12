@@ -91,7 +91,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
     };
 
     return (
-        <Container sx={{ marginTop: 0, marginBottom: 4, width: '100%'}} >
+        <Container sx={{ marginTop: 0, marginBottom: 4, minWidth: '100%'}} >
             <Button variant="outlined" color="secondary" startIcon={<ArrowBack />} onClick={onBack}>
                 Torna Indietro
             </Button>

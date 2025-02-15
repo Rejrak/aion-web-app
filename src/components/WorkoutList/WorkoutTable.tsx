@@ -7,7 +7,16 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton
+    IconButton,
+    useMediaQuery,
+    useTheme,
+    List,
+    Card,
+    CardContent,
+    TextField,
+    Typography,
+    CardActions,
+    Button
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import WorkoutTableRow from './WorkoutTableRow';
@@ -29,6 +38,10 @@ const WorkoutTable: React.FC<WorkoutTableProps> = ({ workout, isEditing, sortOrd
     const [exerciseTypes, setExerciseTypes] = useState<ExerciseType[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const fetchExercises = async () => {
         try {
             setLoading(true);
@@ -58,8 +71,8 @@ const WorkoutTable: React.FC<WorkoutTableProps> = ({ workout, isEditing, sortOrd
 
     const groupedExercises = groupByMuscle(exerciseTypes);
 
-
     return (
+
         <TableContainer component={Paper} sx={{ marginBottom: 2 }}>
             <Table>
                 <TableHead>
@@ -95,6 +108,7 @@ const WorkoutTable: React.FC<WorkoutTableProps> = ({ workout, isEditing, sortOrd
                 </TableBody>
             </Table>
         </TableContainer>
+
     );
 };
 

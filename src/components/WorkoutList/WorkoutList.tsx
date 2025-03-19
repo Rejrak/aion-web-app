@@ -116,7 +116,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
                         <Tabs value={selectedTab} onChange={handleTabChange} aria-label="workout tabs">
                             {workouts.map((workout, index) => ( <Tab value={index} label={workout.name} key={workout.id} /> ))}
                         </Tabs>
-                        {workouts[selectedTab] && (  <WorkoutItem workout={workouts[selectedTab]} onEdit={handleOpenDialog} onDelete={handleDeleteWorkout}  key={workouts[selectedTab].id}/>)}
+                        {workouts[selectedTab] && (  <WorkoutItem plan={trainingPlan} workout={workouts[selectedTab]} onEdit={handleOpenDialog} onDelete={handleDeleteWorkout}  key={workouts[selectedTab].id}/>)}
                     </>
                 )}
             </Paper>

@@ -1,17 +1,19 @@
 import React, { useState, useCallback } from 'react';
-import { Workout } from '../../interfaces/trainginPlan';
-import { Paper, Typography, TextField, Button, IconButton, useMediaQuery } from '@mui/material';
+import { Workout, TrainingPlan } from '../../interfaces/trainginPlan';
+import { Paper, Typography, TextField, Button, useMediaQuery } from '@mui/material';
 import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import WorkoutTable from './WorkoutTable';
+import WorkoutMobileView from './WorkoutMobileView';
 
 interface WorkoutItemProps {
     workout: Workout;
+    plan: TrainingPlan;
     onEdit: (workout: Workout) => void;
     onDelete: (id: string) => void;
 }
 
-const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, onEdit, onDelete }) => {
+const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedWorkout, setEditedWorkout] = useState(workout);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -105,6 +107,15 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, onEdit, onDelete }) 
                     onSort={sortExercises} 
                     onExerciseChange={handleExerciseChange} 
                     onDeleteExercise={handleDeleteExercise}
+                />
+            )}
+            {isMobile && (
+                <WorkoutMobileView 
+                    workout={editedWorkout}
+                    plan={plan}
+                    onUpdateWorkout={function (updatedWorkout: Workout): void {
+                    throw new Error('Function not implemented.');
+                } }                    
                 />
             )}
 

@@ -14,8 +14,8 @@ import ExerciseTypeList from '../components/ExerciseList/exerciseTypeList';
 import { useUser } from '../context/userContext';
 import TrainingPlanList from '../components/TrainingList/TrainingPlanList';
 import { TrainingPlan } from '../interfaces/trainginPlan';
-import { Button } from '@mui/material';
 import WorkoutList from '../components/WorkoutList/WorkoutList';
+import { TrainingPlanProvider, useTrainingPlan } from '../context/trainginPlanContext';
 
 
 var NAVIGATION: Navigation = [
@@ -103,6 +103,8 @@ function DashboardLayoutBasic() {
   const { user, logoutUserContext } = useUser();
   const [session, setSession] = useState<Session | null>(null);
   const [selectedTrainingPlan, setSelectedTrainingPlan] = useState<TrainingPlan | null>(null);
+  const { trainingPlan, setTrainingPlanContext, clearTrainingPlanContext } = useTrainingPlan();
+
   
   useEffect(()=>{
     if(!user){
@@ -129,9 +131,20 @@ function DashboardLayoutBasic() {
       },
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedTrainingPlan) {
+      setTrainingPlanContext(selectedTrainingPlan);
+      console.log("Selected training plan: ", selectedTrainingPlan);
+    }
+  }, [selectedTrainingPlan]);
+
+  useEffect(() => {
+    console.log("Context updated trainingPlan:", trainingPlan);
+  }, [trainingPlan]);
   
   
-  
+
 
   return (
     <AppProvider
@@ -150,7 +163,7 @@ function DashboardLayoutBasic() {
         >
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
           {router.pathname === '/trainingPlanList' && !selectedTrainingPlan && <TrainingPlanList onSelectTrainingPlan={setSelectedTrainingPlan} /> }
-          {router.pathname === '/trainingPlanList' && selectedTrainingPlan && <WorkoutList trainingPlan={selectedTrainingPlan} onBack={() => setSelectedTrainingPlan(null)} /> }
+          {router.pathname === '/trainingPlanList' && selectedTrainingPlan && <WorkoutList onBack={() => setSelectedTrainingPlan(null)} /> }
         </PageContainer>
       </DashboardLayout>
     </AppProvider>

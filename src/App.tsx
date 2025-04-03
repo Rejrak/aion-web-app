@@ -3,6 +3,7 @@ import LoginPage from './pages/Login'
 import { UserProvider } from './context/userContext'
 import DashboardLayoutBasic from './pages/Dashboard'
 import { GlobalStyles } from '@mui/material'
+import { TrainingPlanProvider } from './context/trainginPlanContext'
 
 function App() {
   const loginPage = <LoginPage />;
@@ -19,7 +20,12 @@ function App() {
       />
       <Routes>
         <Route path='/auth' element={loginPage} />
-        <Route path='/' element={<DashboardLayoutBasic />} />
+
+        <Route path='/' element={
+            <TrainingPlanProvider>
+              <DashboardLayoutBasic />
+            </TrainingPlanProvider>
+        } />
       </Routes>
     </UserProvider>
   )

@@ -26,7 +26,6 @@ import {
 } from 'chart.js';
 import { Line } from "react-chartjs-2";
 
-// ✅ Registra le scale di Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface ExercisePerformanceProps {

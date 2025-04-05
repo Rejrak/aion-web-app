@@ -7,13 +7,13 @@ import ConfirmDialog from '../Commons/ConfirmDialog';
 // import { getWorkouts, addWorkout, updateWorkout, deleteWorkout } from '../../services/firebaseWorkout';
 import { TrainingPlan, Workout } from '../../interfaces/trainginPlan';
 import { Tabs, Tab } from '@mui/material';
+import { useTrainingPlan } from '../../context/trainginPlanContext';
 
 interface WorkoutListProps {
-    trainingPlan: TrainingPlan;
     onBack: () => void;
 }
 
-const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
+const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
     const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -23,10 +23,16 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState<boolean>(false);
     const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const { trainingPlan, setTrainingPlanContext, clearTrainingPlanContext } = useTrainingPlan();
+    
 
     const fetchWorkouts = async () => {
         try {
             setLoading(true);
+            if (!trainingPlan) {
+                setError('Nessun piano di allenamento selezionato.');
+                return;
+            }
             setWorkouts(trainingPlan.workouts);
         } catch (err) {
             console.error("Errore nel fetch dei workout:", err);
@@ -116,7 +122,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ trainingPlan, onBack }) => {
                         <Tabs value={selectedTab} onChange={handleTabChange} aria-label="workout tabs">
                             {workouts.map((workout, index) => ( <Tab value={index} label={workout.name} key={workout.id} /> ))}
                         </Tabs>
-                        {workouts[selectedTab] && (  <WorkoutItem workout={workouts[selectedTab]} onEdit={handleOpenDialog} onDelete={handleDeleteWorkout}  key={workouts[selectedTab].id}/>)}
+                        {workouts[selectedTab] && (  <WorkoutItem plan={trainingPlan!} workout={workouts[selectedTab]} onEdit={handleOpenDialog} onDelete={handleDeleteWorkout}  key={workouts[selectedTab].id}/>)}
                     </>
                 )}
             </Paper>

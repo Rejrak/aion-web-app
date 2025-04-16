@@ -110,24 +110,22 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
                         onExerciseChange={handleExerciseChange}
                         onDeleteExercise={handleDeleteExercise}
                     />
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        {renderActionButtons()}
-                    </div>
                 </>
             )}
             {isMobile && (
-                <WorkoutMobileView 
+                <WorkoutMobileView
                     workout={editedWorkout}
                     plan={plan}
                     onUpdateWorkout={function (updatedWorkout: Workout): void {
-                    throw new Error('Function not implemented.');
-                } }                    
+                        throw new Error('Function not implemented.');
+                    }}
                 />
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 {renderActionButtons()}
             </div>
+
         </Paper>
     );
 };

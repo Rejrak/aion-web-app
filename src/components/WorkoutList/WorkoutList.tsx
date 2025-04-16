@@ -4,8 +4,7 @@ import { Add, ArrowBack } from '@mui/icons-material';
 import WorkoutItem from './WorkoutItem';
 import WorkoutDialog from './WorkoutDialog';
 import ConfirmDialog from '../Commons/ConfirmDialog';
-// import { getWorkouts, addWorkout, updateWorkout, deleteWorkout } from '../../services/firebaseWorkout';
-import { TrainingPlan, Workout } from '../../interfaces/trainginPlan';
+import { Workout } from '../../interfaces/trainginPlan';
 import { Tabs, Tab } from '@mui/material';
 import { useTrainingPlan } from '../../context/trainginPlanContext';
 
@@ -14,7 +13,6 @@ interface WorkoutListProps {
 }
 
 const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
-    const [workouts, setWorkouts] = useState<Workout[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentWorkout, setCurrentWorkout] = useState<Workout | null>(null);
@@ -33,7 +31,6 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
                 setError('Nessun piano di allenamento selezionato.');
                 return;
             }
-            setWorkouts(trainingPlan.workouts);
         } catch (err) {
             console.error("Errore nel fetch dei workout:", err);
             setError(err instanceof Error ? err.message : 'Errore sconosciuto');
@@ -59,11 +56,9 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
     const handleSaveWorkout = async (workout: Workout) => {
         try {
             if (workout.id) {
-                // await updateWorkout(newWorkout);
-                // setWorkouts((prev) => prev.map((w) => (w.id === newWorkout.id ? newWorkout : w)));
+                // TODO Update workout in the trainingPlan in the context
             } else {
-                // await addWorkout(trainingPlanId, newWorkout);
-                // setWorkouts((prev) => [...prev, newWorkout]);
+                // TODO Update workout in the trainingPlan in the context
             }
             setSnackbarMessage('Workout salvato con successo!');
         } catch (err) {
@@ -82,8 +77,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
         if (!workoutToDelete) return;
 
         try {
-            // await deleteWorkout(trainingPlanId, workoutToDelete);
-            setWorkouts((prev) => prev.filter((w) => w.id !== workoutToDelete));
+            // TODO remove workout from the one in the context 
         } catch (err) {
             console.error("Errore nell'eliminazione del workout:", err);
         } finally {
@@ -113,16 +107,28 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
                     </Box>
                 ) : error ? (
                     <Typography color="error">{error}</Typography>
-                ) : workouts.length === 0 ? (
+                ) : trainingPlan!.workouts.length === 0 ? (
                     <Typography variant="h6" color="textSecondary">
                         Nessun workout trovato.
                     </Typography>
                 ) : (
                     <>
                         <Tabs value={selectedTab} onChange={handleTabChange} aria-label="workout tabs">
-                            {workouts.map((workout, index) => ( <Tab value={index} label={workout.name} key={workout.id} /> ))}
+                            {trainingPlan!.workouts.map((workout, index) => ( 
+                                <Tab 
+                                    value={index} 
+                                    label={workout.name} 
+                                    key={workout.id} /> )
+                            )}
                         </Tabs>
-                        {workouts[selectedTab] && (  <WorkoutItem plan={trainingPlan!} workout={workouts[selectedTab]} onEdit={handleOpenDialog} onDelete={handleDeleteWorkout}  key={workouts[selectedTab].id}/>)}
+                        {trainingPlan!.workouts[selectedTab] && (  
+                            <WorkoutItem 
+                                plan={trainingPlan!}
+                                workout={trainingPlan!.workouts[selectedTab]} 
+                                onEdit={handleOpenDialog} 
+                                onDelete={handleDeleteWorkout}  
+                                key={trainingPlan!.workouts[selectedTab].id}/>
+                        )}
                     </>
                 )}
             </Paper>

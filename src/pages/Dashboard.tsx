@@ -38,7 +38,7 @@ var NAVIGATION: Navigation = [
   },
   {
     segment: 'trainingPlanList',
-    title: 'Piani di Allenamento',
+    title: 'I Tuoi Piani di Allenamento',
     icon: <FitnessCenterIcon />,
   },
   // {
@@ -102,7 +102,7 @@ function DashboardLayoutBasic() {
   const router = useDemoRouter('/dashboard');
   const { user, logoutUserContext } = useUser();
   const [session, setSession] = useState<Session | null>(null);
-  const [selectedTrainingPlan, setSelectedTrainingPlan] = useState<TrainingPlan | null>(null);
+  // const [selectedTrainingPlan, setSelectedTrainingPlan] = useState<TrainingPlan | null>(null);
   const { trainingPlan, setTrainingPlanContext, clearTrainingPlanContext } = useTrainingPlan();
 
   
@@ -133,13 +133,6 @@ function DashboardLayoutBasic() {
   }, []);
 
   useEffect(() => {
-    if (selectedTrainingPlan) {
-      setTrainingPlanContext(selectedTrainingPlan);
-      console.log("Selected training plan: ", selectedTrainingPlan);
-    }
-  }, [selectedTrainingPlan]);
-
-  useEffect(() => {
     console.log("Context updated trainingPlan:", trainingPlan);
   }, [trainingPlan]);
   
@@ -162,8 +155,8 @@ function DashboardLayoutBasic() {
           style={{ flex: 1, maxWidth: 'none' }}
         >
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
-          {router.pathname === '/trainingPlanList' && !selectedTrainingPlan && <TrainingPlanList onSelectTrainingPlan={setSelectedTrainingPlan} /> }
-          {router.pathname === '/trainingPlanList' && selectedTrainingPlan && <WorkoutList onBack={() => setSelectedTrainingPlan(null)} /> }
+          {router.pathname === '/trainingPlanList' && !trainingPlan && <TrainingPlanList onSelectTrainingPlan={setTrainingPlanContext} /> }
+          {router.pathname === '/trainingPlanList' && trainingPlan && <WorkoutList onBack={() => clearTrainingPlanContext()} /> }
         </PageContainer>
       </DashboardLayout>
     </AppProvider>

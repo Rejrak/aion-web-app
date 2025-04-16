@@ -62,7 +62,7 @@ const TrainingPlanDialog: React.FC<TrainingPlanDialogProps> = ({ open, trainingP
                     fullWidth
                     label="Data di Assegnazione"
                     type="date"
-                    value={formState.assignedDate.toISOString().split('T')[0]}
+                    // value={formState.assignedDate.toISOString().split('T')[0]}
                     onChange={(e) => handleChange('assignedDate', new Date(e.target.value))}
                     sx={{ marginBottom: 2 }}
                  /> 

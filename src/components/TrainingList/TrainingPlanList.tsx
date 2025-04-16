@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { getTrainingPlans, addTrainingPlan, updateTrainingPlan, deleteTrainingPlan } from '../../services/firebaseTrainingPlan';
 import { TrainingPlan } from '../../interfaces/trainginPlan';
 import { useUser } from '../../context/userContext';
+import { useTrainingPlan } from '../../context/trainginPlanContext';
 
 interface TrainingPlanListProps {
     onSelectTrainingPlan: (plan: TrainingPlan) => void;
@@ -18,10 +19,10 @@ const TrainingPlanList: React.FC<TrainingPlanListProps> = ({ onSelectTrainingPla
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentPlan, setCurrentPlan] = useState<TrainingPlan | null>(null);
     const [open, setOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
     const { user } = useUser();
+    const { trainingPlan, setTrainingPlanContext, clearTrainingPlanContext } = useTrainingPlan();
 
     const fetchTrainingPlans = async () => {
         try {
@@ -41,13 +42,13 @@ const TrainingPlanList: React.FC<TrainingPlanListProps> = ({ onSelectTrainingPla
     }, []);
 
     const handleOpenDialog = (plan: TrainingPlan | null = null) => {
-        setCurrentPlan(plan);
+        setTrainingPlanContext(plan!);
         setOpen(true);
     };
 
     const handleCloseDialog = () => {
         setOpen(false);
-        setCurrentPlan(null);
+        clearTrainingPlanContext();
     };
 
     const handleSaveTrainingPlan = async (plan: TrainingPlan) => {
@@ -128,7 +129,7 @@ const TrainingPlanList: React.FC<TrainingPlanListProps> = ({ onSelectTrainingPla
 
             <TrainingPlanDialog
                 open={open}
-                trainingPlan={currentPlan}
+                trainingPlan={trainingPlan}
                 onClose={handleCloseDialog}
                 onSave={handleSaveTrainingPlan}
             />

@@ -26,7 +26,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
     const { trainingPlan, setTrainingPlanContext, clearTrainingPlanContext } = useTrainingPlan();
     
 
-    const fetchWorkouts = async () => {
+    const fetchWorkouts = () => {
         try {
             setLoading(true);
             if (!trainingPlan) {
@@ -44,7 +44,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
 
     useEffect(() => {
         fetchWorkouts();
-    }, []);
+    }, [trainingPlan]);
 
     const handleOpenDialog = (workout: Workout | null = null) => {
         setCurrentWorkout(workout);

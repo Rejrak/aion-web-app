@@ -131,11 +131,6 @@ function DashboardLayoutBasic() {
       },
     };
   }, []);
-
-  useEffect(() => {
-    console.log("Context updated trainingPlan:", trainingPlan);
-  }, [trainingPlan]);
-  
   
 
 

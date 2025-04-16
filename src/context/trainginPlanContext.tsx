@@ -1,10 +1,12 @@
 import { createContext, useState, ReactNode, useContext } from 'react';
-import { TrainingPlan } from '../interfaces/trainginPlan'; // metti il path giusto dove hai salvato l'interfaccia
+import { TrainingPlan } from '../interfaces/trainginPlan';
+import { updateTrainingPlan } from '../services/firebaseTrainingPlan';
 
 type TrainingPlanContextType = {
     trainingPlan: TrainingPlan | null;
     setTrainingPlanContext: (plan: TrainingPlan) => void;
     clearTrainingPlanContext: () => void;
+    updateTrainingPlanContext: (plan: TrainingPlan) => Promise<void>;
 };
 
 const TrainingPlanContext = createContext<TrainingPlanContextType | null>(null);
@@ -20,8 +22,18 @@ export const TrainingPlanProvider = ({ children }: { children: ReactNode }) => {
         setTrainingPlan(null);
     };
 
+    const updateTrainingPlanContext = async (plan: TrainingPlan) => {
+        await updateTrainingPlan(plan);
+        setTrainingPlan((prev) => (prev ? { ...prev, ...plan } : plan));
+    };
+
     return (
-        <TrainingPlanContext.Provider value={{ trainingPlan, setTrainingPlanContext, clearTrainingPlanContext }}>
+        <TrainingPlanContext.Provider value={{ 
+            trainingPlan, 
+            setTrainingPlanContext, 
+            clearTrainingPlanContext,
+            updateTrainingPlanContext
+        }}>
             {children}
         </TrainingPlanContext.Provider>
     );

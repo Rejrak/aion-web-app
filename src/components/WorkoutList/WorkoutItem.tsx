@@ -17,6 +17,7 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
     const [isEditing, setIsEditing] = useState(false);
     const [editedWorkout, setEditedWorkout] = useState(workout);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -33,7 +34,7 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
     const handleExerciseChange = useCallback((index: number, field: string, value: any) => {
         setEditedWorkout((prevWorkout) => ({
             ...prevWorkout,
-            exercises: prevWorkout.exercises.map((ex, i) => 
+            exercises: prevWorkout.exercises.map((ex, i) =>
                 i === index ? { ...ex, [field]: value } : ex
             )
         }));
@@ -49,7 +50,7 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
     const sortExercises = useCallback(() => {
         setEditedWorkout((prevWorkout) => ({
             ...prevWorkout,
-            exercises: [...prevWorkout.exercises].sort((a, b) => 
+            exercises: [...prevWorkout.exercises].sort((a, b) =>
                 sortOrder === 'asc'
                     ? a.exerciseMuscleGroup.localeCompare(b.exerciseMuscleGroup)
                     : b.exerciseMuscleGroup.localeCompare(a.exerciseMuscleGroup)
@@ -100,14 +101,19 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
         <Paper sx={{ padding: 3, marginBottom: "20px" }}>
             {renderWorkoutTitle()}
             {!isMobile && (
-                <WorkoutTable 
-                    workout={editedWorkout} 
-                    isEditing={isEditing} 
-                    sortOrder={sortOrder} 
-                    onSort={sortExercises} 
-                    onExerciseChange={handleExerciseChange} 
-                    onDeleteExercise={handleDeleteExercise}
-                />
+                <>
+                    <WorkoutTable
+                        workout={editedWorkout}
+                        isEditing={isEditing}
+                        sortOrder={sortOrder}
+                        onSort={sortExercises}
+                        onExerciseChange={handleExerciseChange}
+                        onDeleteExercise={handleDeleteExercise}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        {renderActionButtons()}
+                    </div>
+                </>
             )}
             {isMobile && (
                 <WorkoutMobileView 

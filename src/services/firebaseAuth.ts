@@ -20,7 +20,7 @@ export const signUpUser = async (email: string, password: string): Promise<UserC
 
 export const getUsers = async (): Promise<User[]> => {
   try {
-    const querySnapshot = await getDocs(collection(db, "exerciseTypes"));
+    const querySnapshot = await getDocs(collection(db, "users"));
     return querySnapshot.docs.map((doc) => ({ userId: doc.id, ...doc.data() })) as User[];
   }catch (error) {
     throw error;

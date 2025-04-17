@@ -20,10 +20,9 @@ import {
 } from '@mui/material';
 import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import WorkoutTableRow from './WorkoutTableRow';
-import { Workout } from '../../interfaces/trainginPlan';
-import { ExerciseType } from '../../interfaces/exerciseType';
-import { Exercise } from '../../interfaces/trainginPlan';
-import { getExerciseTypes } from '../../services/firebaseExerciseType';
+import { Workout } from '../../../interfaces/trainginPlan';
+import { ExerciseType } from '../../../interfaces/exerciseType';
+import { getExerciseTypes } from '../../../services/firebaseExerciseType';
 
 interface WorkoutTableProps {
     workout: Workout;

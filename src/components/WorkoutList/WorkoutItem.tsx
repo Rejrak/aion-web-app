@@ -3,8 +3,8 @@ import { Workout, TrainingPlan } from '../../interfaces/trainginPlan';
 import { Paper, Typography, TextField, Button, useMediaQuery } from '@mui/material';
 import { Edit, Delete, Save, Cancel } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import WorkoutTable from './WorkoutTable';
-import WorkoutMobileView from './WorkoutMobileView';
+import WorkoutTable from './desktop/WorkoutTable';
+import WorkoutMobileView from './mobile/WorkoutMobileView';
 
 interface WorkoutItemProps {
     workout: Workout;
@@ -17,7 +17,6 @@ const WorkoutItem: React.FC<WorkoutItemProps> = ({ workout, plan, onEdit, onDele
     const [isEditing, setIsEditing] = useState(false);
     const [editedWorkout, setEditedWorkout] = useState(workout);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 

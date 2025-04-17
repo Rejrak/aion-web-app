@@ -40,6 +40,7 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
     };
 
     useEffect(() => {
+        setCurrentWorkout(trainingPlan?.workouts[0] || null);
         fetchWorkouts();
     }, [trainingPlan]);
 
@@ -86,8 +87,9 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
         }
     };
 
-    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
         setSelectedTab(newValue);
+        setCurrentWorkout(trainingPlan!.workouts[newValue]);
     };
 
     return (
@@ -121,13 +123,13 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ onBack }) => {
                                     key={workout.id} /> )
                             )}
                         </Tabs>
-                        {trainingPlan!.workouts[selectedTab] && (  
+                        {currentWorkout !== null && (  
                             <WorkoutItem 
                                 plan={trainingPlan!}
-                                workout={trainingPlan!.workouts[selectedTab]} 
+                                workout={currentWorkout!} 
                                 onEdit={handleOpenDialog} 
                                 onDelete={handleDeleteWorkout}  
-                                key={trainingPlan!.workouts[selectedTab].id}/>
+                                key={currentWorkout!.id}/>
                         )}
                     </>
                 )}

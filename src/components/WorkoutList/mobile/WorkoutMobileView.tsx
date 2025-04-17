@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Workout, Exercise, TrainingPlan } from "../../interfaces/trainginPlan";
+import { Workout, Exercise, TrainingPlan } from "../../../interfaces/trainginPlan";
 import { Card, CardContent, Typography, IconButton, Fab, MenuItem, Select, } from "@mui/material";
 import { Edit, Delete, Add, Assessment } from "@mui/icons-material";
-import ExerciseEditModal from "../ExerciseList/ExerciseEditModal";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
-import ExercisePerformance from "../ExerciseList/ExercisePerformance";
-import { useUser } from "../../context/userContext";
+import ExerciseEditModal from "../../ExerciseList/ExerciseEditModal";
+import ConfirmDeleteDialog from "../ConfirmDeleteDialog";
+import ExercisePerformance from "../../ExerciseList/ExercisePerformance";
+import { useUser } from "../../../context/userContext";
 
 interface WorkoutMobileViewProps {
     workout: Workout;

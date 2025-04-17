@@ -16,6 +16,7 @@ import TrainingPlanList from '../components/TrainingList/TrainingPlanList';
 import { TrainingPlan } from '../interfaces/trainginPlan';
 import WorkoutList from '../components/WorkoutList/WorkoutList';
 import { TrainingPlanProvider, useTrainingPlan } from '../context/trainginPlanContext';
+import UserList from '../components/Users/UserList';
 
 
 var NAVIGATION: Navigation = [
@@ -147,8 +148,8 @@ function DashboardLayoutBasic() {
         <PageContainer 
           title={""} 
           breadcrumbs={[]} 
-          style={{ flex: 1, maxWidth: 'none' }}
-        >
+          style={{ flex: 1, maxWidth: 'none' }}>
+          {router.pathname === '/dashboard' && <UserList />}
           {router.pathname === '/exerciseTypeList' && <ExerciseTypeList />}
           {router.pathname === '/trainingPlanList' && !trainingPlan && <TrainingPlanList onSelectTrainingPlan={setTrainingPlanContext} /> }
           {router.pathname === '/trainingPlanList' && trainingPlan && <WorkoutList onBack={() => clearTrainingPlanContext()} /> }
